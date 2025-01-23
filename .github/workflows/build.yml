@@ -1,4 +1,4 @@
-name: Build iPerf3 for Android
+name: Build iPerf3 APK
 
 on:
   push:
@@ -13,26 +13,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Set up Android NDK
-      run: |
-        wget https://dl.google.com/android/repository/android-ndk-r21d-linux-x86_64.zip
-        unzip android-ndk-r21d-linux-x86_64.zip -d $HOME/ndk
-        echo "ANDROID_NDK_HOME=$HOME/ndk/android-ndk-r21d" >> $GITHUB_ENV
+    - name: Set up Java JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'adopt'
 
-    - name: Install dependencies
+    - name: Build APK using Gradle
       run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake build-essential
-
-    - name: Build iPerf3 for Android
-      run: |
-        mkdir build
-        cd build
-        cmake ../  # Chỉ định đúng đường dẫn tới thư mục chứa mã nguồn (root của repository)
-        cmake --build .
+        ./gradlew assembleRelease
 
     - name: Upload APK as artifact
       uses: actions/upload-artifact@v3
       with:
         name: iperf3-apk
-        path: ./build/iperf3.apk
+        path: app/build/outputs/apk/release/*.apk
