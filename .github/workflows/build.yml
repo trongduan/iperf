@@ -1,0 +1,38 @@
+name: Build iPerf3 for Android
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Android NDK
+      uses: android-actions/setup-ndk@v1
+      with:
+        ndk-version: '21.3.6528147'
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential
+
+    - name: Build iPerf3 for Android
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake -DANDROID_NATIVE_API_LEVEL=21 -DCMAKE_BUILD_TYPE=Release
+        cmake --build .
+
+    - name: Upload APK as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: iperf3-apk
+        path: ./build/iperf3.apk
+        
