@@ -1,0 +1,32 @@
+name: Build iPerf3 for Android
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Build Docker image
+      run: docker build -t android-ndk:latest .
+
+    - name: Run Docker container and fetch binaries
+      run: |
+        docker run -d --name android-ndk-container android-ndk
+        mkdir -p binaries
+        docker cp -a android-ndk-container:/tmp/libs binaries
+        docker stop android-ndk-container
+        docker rm android-ndk-container
+
+    - name: Upload binaries as artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: iperf3-binaries
+        path: binaries/
